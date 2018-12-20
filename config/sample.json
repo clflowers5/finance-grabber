@@ -1,0 +1,44 @@
+{
+  "funds": [
+    {
+      "name": "Best Bank AZ",
+      "url": "https://bestbank.this.is.not.real.az.com/login",
+      "passwordManagerLookupKey": "bestbank",
+      "steps": {
+        "login": {
+          "username": {
+            "type": "enter-text",
+            "elementHandle": "#userId"
+          },
+          "password": {
+            "type": "enter-text",
+            "elementHandle": "#password"
+          },
+          "submit": {
+            "type": "click",
+            "elementHandle": "#log-in-button",
+            "pageNavigation": true
+          }
+        },
+        "retrieval": [
+          {
+            "type": "click",
+            "elementHandle": "#my-account",
+            "pageNavigation": true
+          },
+          {
+            "type": "read",
+            "reportKey": "balance",
+            "elementHandle": ".account-balance"
+          }
+        ]
+      }
+    }
+  ],
+  "debts": [
+    {
+      "name": "These aren't quite ready yet!",
+      "steps": []
+    }
+  ]
+}

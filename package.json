@@ -1,0 +1,33 @@
+{
+  "name": "puppeteer-finance-grabber",
+  "version": "0.0.0",
+  "description": "",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "scripts": {
+    "dev": "tsc --declaration --watch",
+    "build": "tsc --declaration",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jest": "^23.3.9",
+    "@types/node": "^10.12.1",
+    "@types/puppeteer": "^1.9.1",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.4",
+    "typescript": "^3.1.5"
+  },
+  "dependencies": {
+    "@types/minimist": "^1.2.0",
+    "bitwarden-cli-utils": "0.0.7",
+    "minimist": "^1.2.0",
+    "puppeteer": "^1.10.0"
+  }
+}
