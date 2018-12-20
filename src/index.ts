@@ -33,6 +33,11 @@ import parseArgs from './parseArgs';
     return financialConfigExecutor.execute();
   });
 
+  const debtsPromises = config.debts.map(async (debtEntry: FinancialEntry) => {
+    const financialConfigExecutor = await buildFinancialConfigExecutor(debtEntry);
+    return financialConfigExecutor.execute();
+  });
+
   // syncronous / blocking
   // const fundsPromises = await config.funds.reduce(async (carry: any, current: FinancialEntry) => {
   //   const result = await carry;
@@ -42,10 +47,11 @@ import parseArgs from './parseArgs';
   // }, Promise.resolve([]));
 
   // sigh.
-  let fundsResult: any = [];
+  let fundsResult: any[] = [];
+  let debtsResult: any[] = [];
 
   try {
-    fundsResult = await Promise.all(fundsPromises)
+    [fundsResult, debtsResult] = [await Promise.all(fundsPromises), await Promise.all(debtsPromises)];
   } catch (err) {
     console.error(`Unrecoverable error`, err);
     await browser.close();
@@ -53,7 +59,28 @@ import parseArgs from './parseArgs';
     process.exit(1);
   }
 
-  const result = Object.assign({}, ...fundsResult);
+  const totalFunds = fundsResult.reduce((carry, current) => {
+    Object.values(current).forEach((fundEntries: object) => {
+      Object.values(fundEntries).forEach((value: string) => {
+        const floatValue = Number.parseFloat(value);
+        if (!isNaN(floatValue)) {
+          carry += floatValue;
+        }
+      });
+    });
+    return carry;
+  }, 0);
+
+  const totalDebts = 0;
+  const actualFunds = totalFunds - totalDebts;
+
+  const result = {
+    funds: Object.assign({}, ...fundsResult),
+    debts: Object.assign({}, ...debtsResult),
+    totalFunds: String(totalFunds),
+    totalDebts: String(totalDebts),
+    actualFunds: String(actualFunds),
+  };
 
   console.log('~fin', JSON.stringify(result));
 

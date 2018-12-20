@@ -23,7 +23,12 @@ Only works with `BitWarden` for credential management currently.
 3. from dist folder: `node index.js --bwUsername= --bwPassword= --runInBrowser=true`
 
 All args options:
-`bwUsername` bitwarden username required
-`bwPassword` bitwarden password required
-`runInBrowser` true/false for headless execution
-`debug` true/false, debug mode will take screenshots of various steps and are just thrown in the dist directory currently.
+* `bwUsername` bitwarden username required
+* `bwPassword` bitwarden password required
+* `runInBrowser` true/false for headless execution
+* `debug` true/false, debug mode will take screenshots of various steps and are just thrown in the dist directory currently.
+
+## Tests:
+There are no tests. It either works or it doesn't. 
+
+Browser automation is inherently unreliable, so things can fail or timeout regardless of whether the tests are green.

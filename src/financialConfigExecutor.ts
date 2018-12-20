@@ -2,6 +2,7 @@ import PageNavigator from "./pageNavigator";
 import PageActionMapper, { ACTIONS } from "./pageActionMapper";
 import { Credentials, getCredentials } from "./credentialManager";
 import { ConfigBlock, FinancialEntry, StepsConfig } from "./interfaces";
+import normalizeAmountString from "./normalizeAmountString";
 
 interface FinancialConfigExecutorOptions {
   debug: boolean;
@@ -35,7 +36,7 @@ class FinancialConfigExecutor {
       result = await this.retrieveFunds(this.config.steps);
       await this.pageNavigator.close();
     } catch (err) {
-      console.error(`Failed to process {${this.config.name}}`);
+      console.error(`Failed to process {${this.config.name}}`, err);
       result = 'error';
     }
 
@@ -53,9 +54,9 @@ class FinancialConfigExecutor {
     return await steps.retrieval.reduce(async (carry: any, current: ConfigBlock) => {
       const result = await carry;
       await this.takeDebugScreenshot(`${this.config.name}-retrieval-${current.type}.png`);
-      const output = await this.pageActionMapper.mapAction(current);
+      const output = await this.pageActionMapper.mapAction(current) || '';
       if (current.type === ACTIONS.READ && typeof current.reportKey === 'string') {
-        result[current.reportKey] = output;
+        result[current.reportKey] = normalizeAmountString(output);
       }
       return result;
     }, Promise.resolve({}));
