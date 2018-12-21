@@ -14,7 +14,7 @@ Only works with `BitWarden` for credential management currently.
 * mapping of config actions to puppeteer actions // done
 * support config sites.json path via command line arg
 * validate entire config before running
-* add option for data-dir to puppeteer so that cookies work as expected.
+* add option for data-dir to puppeteer so that cookies work as expected. // done
 
 ## To run:
 
@@ -23,13 +23,15 @@ Only works with `BitWarden` for credential management currently.
 
 2. `npm install` then `npm run build`
 
-3. from dist folder: `node index.js --bwUsername= --bwPassword= --runInBrowser=true`
+3. from dist folder: `node index.js --bwUsername= --bwPassword= `
 
 All args options:
 * `bwUsername` bitwarden username required
 * `bwPassword` bitwarden password required
 * `runInBrowser` true/false for headless execution
 * `debug` true/false, debug mode will take screenshots of various steps and are just thrown in the dist directory currently.
+* `userDataDir` recommended: useful to use existing cookies and avoid browser verification issues. 
+    * Path to your chrome (only) Profile,  ubuntu ex: `--userDataDir='/home/<your_profile>.config/google-chrome'`
 
 ## Tests:
 There are no tests. It either works or it doesn't. 

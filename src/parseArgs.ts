@@ -6,6 +6,7 @@ enum ArgKeys {
   PASSWORD = 'bwPassword',
   RUN_IN_BROWSER = 'runInBrowser',
   DEBUG = 'debug',
+  DATA_DIR = 'userDataDir',
 }
 
 function parseArgs(): Args {
@@ -18,6 +19,7 @@ function parseArgs(): Args {
     options: {
       debug: args[ArgKeys.DEBUG] === 'true',
       runInBrowser: args[ArgKeys.RUN_IN_BROWSER] === 'true',
+      userDataDir: args[ArgKeys.DATA_DIR] || null
     }
   };
 }

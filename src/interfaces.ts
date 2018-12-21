@@ -34,6 +34,7 @@ interface Args {
   options: {
     debug: boolean,
     runInBrowser: boolean,
+    userDataDir: string,
   }
 }
 

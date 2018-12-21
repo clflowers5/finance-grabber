@@ -19,6 +19,7 @@ import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
 
   const browser = await puppeteer.launch({
     headless: !args.options.runInBrowser,
+    userDataDir: args.options.userDataDir,
   });
 
   // Everything runs async
