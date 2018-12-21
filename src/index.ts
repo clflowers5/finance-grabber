@@ -1,17 +1,11 @@
 import puppeteer from 'puppeteer';
-import PageNavigator from './pageNavigator';
-import {
-  login as loginToCredentials,
-  logout as logoutOfCredentials,
-} from './credentialManager';
+import { login as loginToCredentials, logout as logoutOfCredentials, } from './credentialManager';
 import { writeOutputFile } from './writeOutputJson';
-import PageActionMapper from './pageActionMapper';
-
-// todo: read from param path.
-import config from '../config/sites.json';
-import FinancialConfigExecutor from './financialConfigExecutor';
-import { FinancialEntry, Args } from './interfaces';
+import config from '../config/sites.json'; // todo: read from param path.
+import { Args, FinancialEntry } from './interfaces';
 import parseArgs from './parseArgs';
+import calculateFinancialResults from "./calculateFinancialResults";
+import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
 
 (async () => {
   const args: Args = parseArgs();
@@ -27,24 +21,16 @@ import parseArgs from './parseArgs';
     headless: !args.options.runInBrowser,
   });
 
-  // concurrent-ish
+  // Everything runs async
   const fundsPromises = config.funds.map(async (fundEntry: FinancialEntry) => {
-    const financialConfigExecutor = await buildFinancialConfigExecutor(fundEntry);
+    const financialConfigExecutor = await buildFinancialConfigExecutor(browser, fundEntry, args);
     return financialConfigExecutor.execute();
   });
 
   const debtsPromises = config.debts.map(async (debtEntry: FinancialEntry) => {
-    const financialConfigExecutor = await buildFinancialConfigExecutor(debtEntry);
+    const financialConfigExecutor = await buildFinancialConfigExecutor(browser, debtEntry, args);
     return financialConfigExecutor.execute();
   });
-
-  // syncronous / blocking
-  // const fundsPromises = await config.funds.reduce(async (carry: any, current: FinancialEntry) => {
-  //   const result = await carry;
-  //   const financialConfigExecutor = await buildFinancialConfigExecutor(current);
-  //   result.push(await financialConfigExecutor.execute());
-  //   return result;
-  // }, Promise.resolve([]));
 
   // sigh.
   let fundsResult: any[] = [];
@@ -59,22 +45,12 @@ import parseArgs from './parseArgs';
     process.exit(1);
   }
 
-  const totalFunds = fundsResult.reduce((carry, current) => {
-    Object.values(current).forEach((fundEntries: object) => {
-      Object.values(fundEntries).forEach((value: string) => {
-        const floatValue = Number.parseFloat(value);
-        if (!isNaN(floatValue)) {
-          carry += floatValue;
-        }
-      });
-    });
-    return carry;
-  }, 0);
-
-  const totalDebts = 0;
+  const totalFunds = calculateFinancialResults(fundsResult);
+  const totalDebts = calculateFinancialResults(debtsResult);
   const actualFunds = totalFunds - totalDebts;
 
   const result = {
+    date: new Date().toDateString(),
     funds: Object.assign({}, ...fundsResult),
     debts: Object.assign({}, ...debtsResult),
     totalFunds: String(totalFunds),
@@ -88,11 +64,4 @@ import parseArgs from './parseArgs';
 
   await browser.close();
   await logoutOfCredentials();
-
-  async function buildFinancialConfigExecutor(entry: FinancialEntry): Promise<FinancialConfigExecutor> {
-    const page = await browser.newPage();
-    const navigator = new PageNavigator(page);
-    const pageActionMapper = new PageActionMapper(navigator);
-    return new FinancialConfigExecutor(entry, navigator, pageActionMapper, {debug: args.options.debug});
-  }
 })();

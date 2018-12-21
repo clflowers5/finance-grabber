@@ -10,8 +10,11 @@ Only works with `BitWarden` for credential management currently.
 * tests. eventually
 * actual logging to file.
 * debug modes with screenshot gen // done
-* normalize/evaluate output values to common format.
+* normalize/evaluate output values to common format. // done
 * mapping of config actions to puppeteer actions // done
+* support config sites.json path via command line arg
+* validate entire config before running
+* add option for data-dir to puppeteer so that cookies work as expected.
 
 ## To run:
 

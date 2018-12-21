@@ -37,9 +37,16 @@ interface Args {
   }
 }
 
+interface FinancialResult {
+  [name: string]: {
+    [key: string]: string,
+  }
+}
+
 export {
   FinancialConfig,
   FinancialEntry,
+  FinancialResult,
   StepsConfig,
   ConfigBlock,
   Args,

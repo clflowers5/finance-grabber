@@ -1,7 +1,7 @@
 import PageNavigator from "./pageNavigator";
 import PageActionMapper, { ACTIONS } from "./pageActionMapper";
 import { Credentials, getCredentials } from "./credentialManager";
-import { ConfigBlock, FinancialEntry, StepsConfig } from "./interfaces";
+import { ConfigBlock, FinancialEntry, FinancialResult, StepsConfig } from "./interfaces";
 import normalizeAmountString from "./normalizeAmountString";
 
 interface FinancialConfigExecutorOptions {
@@ -21,12 +21,11 @@ class FinancialConfigExecutor {
   }
 
   public async execute(): Promise<any> {
-    // todo: debts, aggregate
     return this.processFunds();
   }
 
-  private async processFunds(): Promise<any> {
-    let result: string;
+  private async processFunds(): Promise<FinancialResult> {
+    let result: { [key: string]: string } = {};
     try {
       const credentials = await getCredentials(this.config.passwordManagerLookupKey);
       await this.pageNavigator.goToUrl(this.config.url);
@@ -37,7 +36,6 @@ class FinancialConfigExecutor {
       await this.pageNavigator.close();
     } catch (err) {
       console.error(`Failed to process {${this.config.name}}`, err);
-      result = 'error';
     }
 
     return {[this.config.name]: result}
@@ -50,7 +48,7 @@ class FinancialConfigExecutor {
     await this.pageActionMapper.mapAction(loginConfig.submit);
   }
 
-  private async retrieveFunds(steps: StepsConfig): Promise<any> {
+  private async retrieveFunds(steps: StepsConfig): Promise<{ [key: string]: string }> {
     return await steps.retrieval.reduce(async (carry: any, current: ConfigBlock) => {
       const result = await carry;
       await this.takeDebugScreenshot(`${this.config.name}-retrieval-${current.type}.png`);

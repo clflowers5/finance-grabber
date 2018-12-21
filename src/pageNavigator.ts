@@ -26,6 +26,7 @@ class PageNavigator {
 
   public async enterText(selector: string, text: string): Promise<void> {
     try {
+      await this.page.waitForSelector(selector, {visible: true});
       await this.page.type(selector, text);
     } catch (err) {
       console.error(
