@@ -4,11 +4,13 @@ import { Credentials } from 'bitwarden-cli-utils/dist/src/types';
 let user: BitwardenUser;
 
 async function login({username, password}: Credentials): Promise<void> {
+  user = new BitwardenUser(username, password);
   try {
-    user = new BitwardenUser(username, password);
     await user.login();
   } catch (err) {
     console.error(`BitwardenUser failed to login.`);
+    console.error(`Attempting to log out.`);
+    await logout();
     throw err;
   }
 }
