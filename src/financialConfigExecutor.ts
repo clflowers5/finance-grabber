@@ -45,7 +45,14 @@ class FinancialConfigExecutor {
     const loginConfig = steps.login;
     await this.pageActionMapper.mapAction(Object.assign({}, loginConfig.username, {text: credentials.username}));
     await this.pageActionMapper.mapAction(Object.assign({}, loginConfig.password, {text: credentials.password}));
-    await this.pageActionMapper.mapAction(loginConfig.submit);
+
+    if (Array.isArray(loginConfig.submit)) {
+      loginConfig.submit.forEach(async (config: ConfigBlock) => {
+        await this.pageActionMapper.mapAction(config)
+      });
+    } else {
+      await this.pageActionMapper.mapAction(loginConfig.submit);
+    }
   }
 
   private async retrieveFunds(steps: StepsConfig): Promise<{ [key: string]: string }> {
@@ -54,6 +61,7 @@ class FinancialConfigExecutor {
       await this.takeDebugScreenshot(`${this.config.name}-retrieval-${current.type}.png`);
       const output = await this.pageActionMapper.mapAction(current) || '';
       if (current.type === ACTIONS.READ && typeof current.reportKey === 'string') {
+        // if we're reading, it's most likely a monetary value
         result[current.reportKey] = normalizeAmountString(output);
       }
       return result;

@@ -16,7 +16,7 @@ interface StepsConfig {
   login: {
     username: ConfigBlock;
     password: ConfigBlock;
-    submit: ConfigBlock;
+    submit: ConfigBlock | ConfigBlock[];
   },
   retrieval: ConfigBlock[];
 }
