@@ -1,11 +1,13 @@
-import puppeteer from 'puppeteer';
+import { Browser } from "puppeteer";
+
+import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
+import calculateFinancialResults from "./calculateFinancialResults";
+import config from '../config/sites.json'; // todo: read from param path.
+import configurePuppeteerBrowser from "./configurePuppeteerBrowser";
+import parseArgs from './parseArgs';
+import { Args, FinancialEntry } from './interfaces';
 import { login as loginToCredentials, logout as logoutOfCredentials, } from './credentialManager';
 import { writeOutputFile } from './writeOutputJson';
-import config from '../config/sites.json'; // todo: read from param path.
-import { Args, FinancialEntry } from './interfaces';
-import parseArgs from './parseArgs';
-import calculateFinancialResults from "./calculateFinancialResults";
-import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
 
 (async () => {
   const args: Args = parseArgs();
@@ -17,10 +19,7 @@ import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
     process.exit(1);
   }
 
-  const browser = await puppeteer.launch({
-    headless: !args.options.runInBrowser,
-    userDataDir: args.options.userDataDir,
-  });
+  const browser: Browser = await configurePuppeteerBrowser(args);
 
   // Everything runs async
   const fundsPromises = config.funds.map(async (fundEntry: FinancialEntry) => {
@@ -44,6 +43,9 @@ import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
     await browser.close();
     await logoutOfCredentials();
     process.exit(1);
+  } finally {
+    await logoutOfCredentials();
+    await browser.close();
   }
 
   const totalFunds = calculateFinancialResults(fundsResult);
@@ -63,6 +65,5 @@ import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
 
   await writeOutputFile(result);
 
-  await browser.close();
-  await logoutOfCredentials();
+  return result;
 })();
