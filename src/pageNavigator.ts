@@ -27,7 +27,7 @@ class PageNavigator {
   public async enterText(selector: string, text: string): Promise<void> {
     try {
       await this.page.waitForSelector(selector, {visible: true});
-      await this.page.type(selector, text);
+      await this.page.type(selector, text, { delay: 100 });
     } catch (err) {
       console.error(
         `Enter Text failed for: selector={${selector}} text={${text}}`
@@ -56,7 +56,7 @@ class PageNavigator {
       return await this.page.evaluate(
         (element: HTMLElement) => Promise.resolve(element.textContent),
         element
-      );
+      ) || '';
     } catch (err) {
       console.error(`Get contents failed for selector: ${selector}`);
       throw err;
