@@ -1,8 +1,9 @@
 import PageNavigator from "./pageNavigator";
 import PageActionMapper, { ACTIONS } from "./pageActionMapper";
 import { Credentials, getCredentials } from "./credentialManager";
-import { ConfigBlock, FinancialEntry, FinancialResult, StepsConfig } from "./interfaces";
+import {ConfigBlock, FinancialEntry, FinancialResult, StepsConfig, TransactionBlock} from "./interfaces";
 import normalizeAmountString from "./normalizeAmountString";
+import {ElementHandle} from "puppeteer";
 
 interface FinancialConfigExecutorOptions {
   debug: boolean;
@@ -26,6 +27,7 @@ class FinancialConfigExecutor {
 
   private async processFunds(): Promise<FinancialResult> {
     let result: { [key: string]: string } = {};
+    let transactionResult: object = {};
     try {
       const credentials = await getCredentials(this.config.passwordManagerLookupKey);
       await this.pageNavigator.goToUrl(this.config.url);
@@ -33,12 +35,15 @@ class FinancialConfigExecutor {
       await this.handleLogin(this.config.steps, credentials);
       await this.takeDebugScreenshot(`${this.config.name}-after-login.png`);
       result = await this.retrieveFunds(this.config.steps);
+      transactionResult = await this.retrieveTransactions(this.config.steps);
       await this.pageNavigator.close();
     } catch (err) {
       console.error(`Failed to process {${this.config.name}}`, err);
     }
 
-    return {[this.config.name]: result}
+    const aggregateResult = { ...result, ...transactionResult };
+
+    return {[this.config.name]: aggregateResult}
   }
 
   private async handleLogin(steps: StepsConfig, credentials: Credentials): Promise<any> {
@@ -56,7 +61,7 @@ class FinancialConfigExecutor {
   }
 
   private async retrieveFunds(steps: StepsConfig): Promise<{ [key: string]: string }> {
-    return await steps.retrieval.reduce(async (carry: any, current: ConfigBlock) => {
+    return await steps.retrieval.balance.reduce(async (carry: any, current: ConfigBlock) => {
       const result = await carry;
       await this.takeDebugScreenshot(`${this.config.name}-retrieval-${current.type}.png`);
       const output = await this.pageActionMapper.mapAction(current) || '';
@@ -66,6 +71,28 @@ class FinancialConfigExecutor {
       }
       return result;
     }, Promise.resolve({}));
+  }
+
+  private async retrieveTransactions(steps: StepsConfig): Promise<object> {
+    const transactions = steps.retrieval.transactions || {};
+    const pendingConfig = transactions.pending;
+    const chargeConfig = transactions.charges;
+    const pendingCharges = pendingConfig ? await this.retrieveTransactionBlock(pendingConfig) : {};
+    const actualCharges = chargeConfig ? await this.retrieveTransactionBlock(chargeConfig) : {};
+    return {pendingCharges, actualCharges};
+  }
+
+  private async retrieveTransactionBlock(transactionBlock: TransactionBlock): Promise<{ [key: string]: string }> {
+    const elements = await this.pageNavigator.getElementHandleArray(transactionBlock.elementHandle);
+    return await elements.reduce(async (carry: any, current: ElementHandle) => {
+      const result = await carry;
+      const date = transactionBlock.dateHandle ? await this.pageNavigator.getTextFromProvidedElement(current, transactionBlock.dateHandle) : null;
+      const description = transactionBlock.descriptionHandle ? await this.pageNavigator.getTextFromProvidedElement(current, transactionBlock.descriptionHandle) : null;
+      const charge = await this.pageNavigator.getTextFromProvidedElement(current, transactionBlock.amountHandle);
+      const normalizedCharge = normalizeAmountString(charge);
+      result.push({ date, description, charge: normalizedCharge });
+      return result;
+    }, Promise.resolve([]));
   }
 
   private async takeDebugScreenshot(filename: string): Promise<void> {

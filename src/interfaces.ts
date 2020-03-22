@@ -18,7 +18,13 @@ interface StepsConfig {
     password: ConfigBlock;
     submit: ConfigBlock | ConfigBlock[];
   },
-  retrieval: ConfigBlock[];
+  retrieval: {
+    balance: ConfigBlock[],
+    transactions: {
+      pending: TransactionBlock,
+      charges: TransactionBlock,
+    }
+  };
 }
 
 interface ConfigBlock {
@@ -27,6 +33,13 @@ interface ConfigBlock {
   pageNavigation?: boolean,
   reportKey?: string,
   text?: string,
+}
+
+interface TransactionBlock {
+  elementHandle: string,
+  dateHandle?: string,
+  descriptionHandle?: string,
+  amountHandle: string,
 }
 
 interface Args {
@@ -49,6 +62,7 @@ export {
   FinancialEntry,
   FinancialResult,
   StepsConfig,
+  TransactionBlock,
   ConfigBlock,
   Args,
 }

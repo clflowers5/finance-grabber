@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+import {ElementHandle, Page} from 'puppeteer';
 
 class PageNavigator {
   constructor(private page: Page) {
@@ -59,6 +59,27 @@ class PageNavigator {
       ) || '';
     } catch (err) {
       console.error(`Get contents failed for selector: ${selector}`);
+      throw err;
+    }
+  }
+
+  public async getElementHandleArray(selector: string): Promise<ElementHandle[]> {
+    try {
+      await this.page.waitForSelector(selector, {visible: true});
+      return await this.page.$$(selector);
+    } catch (err) {
+      console.error(`getElementHandleArray failed for selector: ${selector}`);
+      throw err;
+    }
+  }
+
+  public async getTextFromProvidedElement(baseElement: ElementHandle, selector: string): Promise<string> {
+    try {
+      const targetElement = await baseElement.$(selector);
+      // omg wat
+      return targetElement ? await (await targetElement.getProperty('textContent')).jsonValue() : '';
+    } catch (err) {
+      console.error(`Get text from element failed for selector: ${selector}`);
       throw err;
     }
   }
