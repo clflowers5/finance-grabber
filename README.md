@@ -22,6 +22,8 @@ Only works with `BitWarden` for credential management currently.
 * Support config-driven password manager selection (only BW supported for now)
 * debug by default and only hold onto screenshots for failed / exception scenarios?
     * I'm pretty much never running without the debug flag set.
+* normalize dates for both execution times and transactions
+  * todo: did basic implementation, need to test
 
 ## Pain Points:
 * Amazon / Chase has proven to be a PITA. Even with dataDir it "doesn't recognize" the browser.

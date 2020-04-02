@@ -1,9 +1,10 @@
 import PageNavigator from "./pageNavigator";
 import PageActionMapper, { ACTIONS } from "./pageActionMapper";
 import { Credentials, getCredentials } from "./credentialManager";
-import {ConfigBlock, FinancialEntry, FinancialResult, StepsConfig, TransactionBlock} from "./interfaces";
+import { ConfigBlock, FinancialEntry, FinancialResult, StepsConfig, TransactionBlock } from "./interfaces";
 import normalizeAmountString from "./normalizeAmountString";
-import {ElementHandle} from "puppeteer";
+import { ElementHandle} from "puppeteer";
+import { isValid as isValidDate, formatISO } from 'date-fns';
 
 interface FinancialConfigExecutorOptions {
   debug: boolean;
@@ -90,7 +91,14 @@ class FinancialConfigExecutor {
       const description = transactionBlock.descriptionHandle ? await this.pageNavigator.getTextFromProvidedElement(current, transactionBlock.descriptionHandle) : null;
       const charge = await this.pageNavigator.getTextFromProvidedElement(current, transactionBlock.amountHandle);
       const normalizedCharge = normalizeAmountString(charge);
-      result.push({ date, description, charge: normalizedCharge });
+      const dateObj = date ? new Date(date) : null;
+
+      result.push({ 
+        date: dateObj && isValidDate(dateObj) ? formatISO(dateObj) : dateObj,
+        description,
+        charge: normalizedCharge
+      });
+
       return result;
     }, Promise.resolve([]));
   }

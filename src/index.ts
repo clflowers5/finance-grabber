@@ -1,4 +1,5 @@
 import { Browser } from "puppeteer";
+import { formatISO } from 'date-fns';
 
 import buildFinancialConfigExecutor from "./buildFinancialConfigExecutor";
 import calculateFinancialResults from "./calculateFinancialResults";
@@ -53,12 +54,12 @@ import { writeOutputFile } from './writeOutputJson';
   const actualFunds = totalFunds - totalDebts;
 
   const result = {
-    date: new Date().toDateString(),
+    date: formatISO(new Date()),
     funds: Object.assign({}, ...fundsResult),
     debts: Object.assign({}, ...debtsResult),
-    totalFunds: String(totalFunds),
-    totalDebts: String(totalDebts),
-    actualFunds: String(actualFunds),
+    totalFunds: totalFunds.toFixed(2),
+    totalDebts: totalDebts.toFixed(2),
+    actualFunds: actualFunds.toFixed(2),
   };
 
   console.log('~fin', JSON.stringify(result));
