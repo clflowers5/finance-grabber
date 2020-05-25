@@ -7,7 +7,6 @@ function writeOutputFile(obj: object): Promise<void> {
         console.error('Error writing file.', err);
         return reject(err);
       }
-      console.log('Output file created.');
       return resolve();
     });
   });

@@ -62,7 +62,7 @@ import { writeOutputFile } from './writeOutputJson';
     actualFunds: actualFunds.toFixed(2),
   };
 
-  console.log('~fin', JSON.stringify(result));
+  console.log('~fin');
 
   await writeOutputFile(result);
 

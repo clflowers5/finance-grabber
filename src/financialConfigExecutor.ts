@@ -65,10 +65,20 @@ class FinancialConfigExecutor {
     return await steps.retrieval.balance.reduce(async (carry: any, current: ConfigBlock) => {
       const result = await carry;
       await this.takeDebugScreenshot(`${this.config.name}-retrieval-${current.type}.png`);
-      const output = await this.pageActionMapper.mapAction(current) || '';
-      if (current.type === ACTIONS.READ && typeof current.reportKey === 'string') {
-        // if we're reading, it's most likely a monetary value
-        result[current.reportKey] = normalizeAmountString(output);
+      const isReadAction = current.type === ACTIONS.READ && typeof current.reportKey === 'string';
+      try {
+        // some sites don't render their elements to DOM if there is no balance, pending charges is a good example
+        const output = await this.pageActionMapper.mapAction(current) || '';
+        if (current.type === ACTIONS.READ && typeof current.reportKey === 'string') {
+          // if we're reading, it's most likely a monetary value
+          result[current.reportKey] = normalizeAmountString(output);
+        }
+      } catch (err) {
+        // todo: more reason to do real logging, also consolidate some of this into a fn to get around TS warnings
+        console.warn(`Retrieve Funds: failed to retrieve selector ${current.elementHandle} - it may be missing from the view.`);
+        if (current.type === ACTIONS.READ && typeof current.reportKey === 'string') {
+          result[current.reportKey] = normalizeAmountString('0');
+        }
       }
       return result;
     }, Promise.resolve({}));
@@ -83,6 +93,7 @@ class FinancialConfigExecutor {
     return {pendingCharges, actualCharges};
   }
 
+  // todo: a failure here shouldn't stop the entire flow
   private async retrieveTransactionBlock(transactionBlock: TransactionBlock): Promise<{ [key: string]: string }> {
     const elements = await this.pageNavigator.getElementHandleArray(transactionBlock.elementHandle);
     return await elements.reduce(async (carry: any, current: ElementHandle) => {
