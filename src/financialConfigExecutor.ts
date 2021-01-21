@@ -23,7 +23,10 @@ class FinancialConfigExecutor {
   }
 
   public async execute(): Promise<any> {
-    return this.processFunds();
+    console.log(`Processing entry for ${this.config.name}.`);
+    const result = await this.processFunds();
+    console.log(`Finished Processing for entry ${this.config.name}.`);
+    return result;
   }
 
   private async processFunds(): Promise<FinancialResult> {

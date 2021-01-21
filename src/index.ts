@@ -15,6 +15,7 @@ import { writeOutputFile } from './writeOutputJson';
 
   try {
     await loginToCredentials(args.credentials);
+    console.log('Logged in with credentials.');
   } catch (err) {
     console.error('Failed to get Credentials. Continuing is futile.', err);
     process.exit(1);
